@@ -100,7 +100,7 @@ impl PokerGame{
 
         let winner = self.find_winner(&mut out_of_play);
         for i in 0..self.players.len(){
-            self.players[i].money -= bets[i];
+            self.players[i].money -= std::cmp::min(self.players[i].money, bets[i]);
         }
         self.players[winner].money += bets.iter().sum::<u128>();
 
