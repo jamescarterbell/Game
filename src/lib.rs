@@ -106,7 +106,7 @@ impl PokerGame{
 
         println!("Winner is: {}", winner);
 
-
+        
         for (i, player) in self.players.iter_mut().enumerate(){
             player.send_hands(&player_hands);
             player.send_victory(if i == winner {VictoryStatus::Win(player.money)} else {VictoryStatus::Lose(player.money)});
@@ -291,10 +291,16 @@ impl PokerPlayer{
 
         self.send_message(json);
 
-
         let mut de = serde_json::Deserializer::from_reader(self.connection.try_clone().unwrap());
-        match PokerActions::deserialize(&mut de){
-            Ok(action) => action,
+        match PokerActionsCards::deserialize(&mut de){
+            Ok(action) => {
+                println!("Hello");
+                println!("Got Action!");
+                if let Some(cards) = action.cards{
+                    self.hand = vec![cards[0].to_card(), cards[1].to_card()];
+                }
+                action.action
+            },
             Err(e) => PokerActions::Disconnected
         }
     }
@@ -327,6 +333,12 @@ pub enum PokerActions{
     Fold,
     Call,
     Disconnected
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PokerActionsCards{
+    pub action: PokerActions,
+    pub cards: Option<Vec<SerdeCard>>
 }
 
 fn create_deck() -> Vec<Card>{
@@ -410,6 +422,18 @@ impl SerdeCard{
                 Suit::Club => SerdeSuit::Club,
                 Suit::Heart => SerdeSuit::Heart,
                 Suit::Diamond => SerdeSuit::Diamond,
+            }
+        }
+    }
+
+    pub fn to_card(&self) -> Card{
+        Card{
+            value: num_to_value(self.value as usize),
+            suit: match self.suit{
+                SerdeSuit::Spade => Suit::Spade,
+                SerdeSuit::Club => Suit::Club,
+                SerdeSuit::Heart => Suit::Heart,
+                SerdeSuit::Diamond => Suit::Diamond,
             }
         }
     }
