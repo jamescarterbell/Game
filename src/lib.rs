@@ -201,6 +201,7 @@ impl PokerGame{
             }
 
             let action_info = ActionInfo{
+                position: better as u8,
                 table: self.table.iter().map(|x| SerdeCard::from_card(x)).collect(),
                 hand: self.players[better].hand.iter().map(|x| SerdeCard::from_card(x)).collect(),
                 bets: bets.iter().copied().collect(),
@@ -272,6 +273,7 @@ pub enum GameStatus{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ActionInfo{
+    position: u8,
     table: Vec<SerdeCard>,
     hand: Vec<SerdeCard>,
     bets: Vec<u128>,
